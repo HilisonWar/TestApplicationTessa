@@ -1,0 +1,117 @@
+﻿<div id="app">
+	<div class="add-task-button">
+		<div class="add-task-button-text">
+			Добавить задачу
+		</div>
+	
+	</div>
+
+	<div class="table-tasks-block">
+		
+		<table border="1">
+			<thead>
+				<tr>
+					<th>
+						ID документа
+					</th>
+
+					<th>
+						Статус
+					</th>
+
+					<th>
+						Задачи
+					</th>
+
+				</tr>
+			</thead>
+
+			<tr v-for="doc in documents">
+				<td>{{doc.id}}</td>
+				<td>{{doc.status}}</td>
+				<td>{{doc.tasks}}</td>
+				<td><button v-on:click="DeleteDocument(doc.id)">Удалить</button></td>
+
+			</tr>
+
+
+		</table>
+
+	</div>
+</div>
+
+<style>
+
+	body{
+
+		margin:0px;
+	}
+
+	.add-task-button
+	{
+		display:flex;
+		flex-direction:column;
+		align-items:center;
+		justify-content:center;
+		text-align:center;
+		position:absolute;
+		background-color:grey;
+		height:150px;
+		width:150px;
+		border-radius:100px;
+		bottom:10px;
+		right:10px;
+	}
+
+	.add-task-button-text
+	{
+		text-align:center;
+	}
+
+	.table-tasks-block
+	{
+		width:100%;
+		height:100%;
+	}
+
+</style>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+	const Application = {
+  data() {
+    return {
+		documents:[
+			{
+				id:1,
+				status:"В работе",
+				tasks:"Задачи"
+			}
+		]
+    }
+  },
+
+  methods:{
+
+
+	  async DeleteDocument(docId)
+	  {
+		  if (confirm("Вы действительно хотите удалить документ?")) {
+
+		  await axios.delete("api/documents/" + docId)
+				.then(response =>
+				{
+					alert(response.data);
+				})
+		  }
+	  }
+
+  }
+};
+
+ Vue.createApp(Application).mount('#app');
+</script>
+
+
