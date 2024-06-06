@@ -28,12 +28,12 @@ namespace TestApplicationTessa.Controllers
 		{
 			var existDocument = _documentsService.GetDocumentById(id);
 
-			if(existDocument == null)
-				return NotFound($"Документ с ID {id} не найден");
-
-			else 
+			if(existDocument != null)
 				return Ok(existDocument);
-		}
+
+			else
+                return NotFound($"Документ с ID {id} не найден");
+        }
 
 		[HttpPost]
 		public IActionResult AddDocument([FromBody] Document newDocument)
@@ -48,10 +48,16 @@ namespace TestApplicationTessa.Controllers
 		}
 
 		[HttpPut]
-		public IActionResult EditDocument()
+		public IActionResult EditDocument([FromBody] Document editedDocument)
 		{
-			return Ok();
-		}
+			var resultOfOperation = _documentsService.UpdateDocument(editedDocument);
+
+			if (resultOfOperation)
+				return Ok("Документ успешно обновлен");
+
+            else
+                return BadRequest("Не удалось обновить документ");
+        }
 
 		[HttpDelete]
 		[Route("{id}")]
@@ -66,5 +72,31 @@ namespace TestApplicationTessa.Controllers
 				return BadRequest($"Не удалось удалить документ с ID {id}");
 		}
 
-	}
+		[HttpPut]
+		[Route("{documentId}/task/{taskId}/cancel")]
+		public IActionResult CancelTaskOfDocument(int documentId,int taskId)
+		{
+			var resultOfOperation  = _documentsService.CancelActiveTaskOfDocument(documentId,taskId);
+
+			if (resultOfOperation)
+				return Ok("Задача отменена");
+
+			else 
+				return BadRequest("Возникла ошибка при отмене задачи");
+        }
+
+        [HttpPut]
+        [Route("{documentId}/task/{taskId}/confirm")]
+        public IActionResult ConfirmTaskOfDocument(int documentId, int taskId)
+        {
+            var resultOfOperation = _documentsService.ConfirmActiveTaskOfDocument(documentId, taskId);
+
+            if (resultOfOperation)
+                return Ok("Задача выполнена");
+
+            else
+                return BadRequest("Возникла ошибка при выполнении задачи");
+        }
+
+    }
 }

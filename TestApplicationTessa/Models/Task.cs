@@ -5,18 +5,21 @@ namespace TestApplicationTessa.Models
 {
 	public class Task
 	{
-		[Key]
-		public int ID { get; set; }
+		public int Id { get; set; }
 
 		public string Name { get; set; }
 
-		public int? PreviousTaskId { get; set; }
+		public bool IsActiveTask { get; set; }
 
-		public Task? PreviousTask { get; set; }
+		[ForeignKey("PreviousTask")]
+		public int? PreviousTaskId { get; set; } = null;
 
-		public int DocumentId { get; set; }
+		public Task? PreviousTask { get; set; } = null;
 
-		[ForeignKey("DocumentId")]
-		public Document Document { get;set; }
+		[ForeignKey("Document")]
+		public int? DocumentId { get; set; } = null;
+
+		public Document? Document { get; set; } = null;
+
 	}
 }
