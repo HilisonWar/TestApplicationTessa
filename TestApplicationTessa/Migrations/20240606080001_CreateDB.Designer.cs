@@ -11,8 +11,8 @@ using TestApplicationTessa.Models;
 namespace TestApplicationTessa.Migrations
 {
     [DbContext(typeof(DataBaseContext))]
-    [Migration("20240606043416_CreateDb")]
-    partial class CreateDb
+    [Migration("20240606080001_CreateDB")]
+    partial class CreateDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -25,11 +25,17 @@ namespace TestApplicationTessa.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("ActiveTaskId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ActiveTaskId")
+                        .IsUnique();
 
                     b.ToTable("Documents");
                 });
@@ -41,9 +47,6 @@ namespace TestApplicationTessa.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("DocumentId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsActiveTask")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
@@ -60,6 +63,15 @@ namespace TestApplicationTessa.Migrations
                     b.HasIndex("PreviousTaskId");
 
                     b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("TestApplicationTessa.Models.Document", b =>
+                {
+                    b.HasOne("TestApplicationTessa.Models.Task", "ActiveTask")
+                        .WithOne("ActiveTaskDocument")
+                        .HasForeignKey("TestApplicationTessa.Models.Document", "ActiveTaskId");
+
+                    b.Navigation("ActiveTask");
                 });
 
             modelBuilder.Entity("TestApplicationTessa.Models.Task", b =>
@@ -81,6 +93,11 @@ namespace TestApplicationTessa.Migrations
             modelBuilder.Entity("TestApplicationTessa.Models.Document", b =>
                 {
                     b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("TestApplicationTessa.Models.Task", b =>
+                {
+                    b.Navigation("ActiveTaskDocument");
                 });
 #pragma warning restore 612, 618
         }

@@ -7,96 +7,123 @@ namespace TestApplicationTessa.Controllers
 	[Route("api/documents")]
 	public class DocumentController : Controller
 	{ 
-		private IDocumentsService _documentsService;
+		private IDocumentsRepository _documentsRepository;
 
-		public DocumentController(IDocumentsService documentsService)
+		public DocumentController(IDocumentsRepository documentsRepository)
 		{
-			_documentsService = documentsService;
+			_documentsRepository = documentsRepository;
 		}
-		
+
+		/// <summary>
+		/// Получить все существующие документы
+		/// </summary>
+		/// <returns></returns>
 		[HttpGet]
+		[ProducesResponseType(200,Type=typeof(List<DocumentDTOGet>))]
 		public IActionResult GetAllDocuments()
 		{
-			var allExistDocumentsFromDb = _documentsService.GetAllDocuments();
+			var allExistDocumentsFromDb = _documentsRepository.GetAllDocuments();
 
 			return Ok(allExistDocumentsFromDb);
 		}
 
-		[Route("{id}")]
+		/// <summary>
+		/// Получить документ по Id
+		/// </summary>
+		/// <param name="id">Id документа</param>
+		/// <returns></returns>
+		[Route("{id:int}")]
 		[HttpGet]
-		public IActionResult GetDocumentById(int id)
+        [ProducesResponseType(200, Type = typeof(DocumentDTOGet))]
+        public IActionResult GetDocumentById(int id)
 		{
-			var existDocument = _documentsService.GetDocumentById(id);
+			var existDocument = _documentsRepository.GetDocumentById(id);
 
 			if(existDocument != null)
 				return Ok(existDocument);
 
 			else
-                return NotFound($"Документ с ID {id} не найден");
+                return NotFound($"Документ с Id {id} не найден");
         }
 
+		/// <summary>
+		/// Добавить документ
+		/// </summary>
+		/// <param name="newDocument"></param>
+		/// <returns></returns>
 		[HttpPost]
-		public IActionResult AddDocument([FromBody] Document newDocument)
+        public IActionResult AddDocument([FromBody] DocumentDTOCreate newDocument)
 		{
-			var result = _documentsService.CreateDocument(newDocument);
+			if (ModelState.IsValid)
+			{
+				var result = _documentsRepository.CreateDocument(newDocument);
 
-			if (result)
-				return Ok("Документ успешно добавлен");
+				if (result)
+					return Ok("Документ успешно добавлен");
 
+				else
+					return BadRequest("Не удалось добавить документ");
+			}
 			else
-				return BadRequest("Не удалось добавить документ");
+			{
+				return BadRequest("Переданы некорректные данные");
+			}
 		}
 
-		[HttpPut]
-		public IActionResult EditDocument([FromBody] Document editedDocument)
-		{
-			var resultOfOperation = _documentsService.UpdateDocument(editedDocument);
-
-			if (resultOfOperation)
-				return Ok("Документ успешно обновлен");
-
-            else
-                return BadRequest("Не удалось обновить документ");
-        }
-
+		/// <summary>
+		/// Удалить документ
+		/// </summary>
+		/// <param name="id">ID документа</param>
+		/// <returns></returns>
 		[HttpDelete]
-		[Route("{id}")]
+		[Route("{id:int}")]
 		public IActionResult DeleteDocument(int id)
 		{
-			var result = _documentsService.DeleteDocument(id);
+			var result = _documentsRepository.DeleteDocument(id);
 
 			if (result)
 				return Ok("Документ успешно удален");
 
 			else
-				return BadRequest($"Не удалось удалить документ с ID {id}");
+				return NotFound($"Документ с Id {id} не найден");
 		}
 
+		/// <summary>
+		/// Отменить активную задачу документа
+		/// </summary>
+		/// <param name="documentId">ID документа</param>
+		/// <param name="taskId">ID активной задачи, относящейся к документу</param>
+		/// <returns></returns>
 		[HttpPut]
-		[Route("{documentId}/task/{taskId}/cancel")]
+		[Route("{documentId:int}/task/{taskId:int}/cancel")]
 		public IActionResult CancelTaskOfDocument(int documentId,int taskId)
 		{
-			var resultOfOperation  = _documentsService.CancelActiveTaskOfDocument(documentId,taskId);
+			var resultOfOperation  = _documentsRepository.CancelActiveTaskOfDocument(documentId,taskId);
 
 			if (resultOfOperation)
 				return Ok("Задача отменена");
 
 			else 
-				return BadRequest("Возникла ошибка при отмене задачи");
+				return BadRequest("Ошибка отмены задачи");
         }
 
+        /// <summary>
+        /// Установить активную задачу как выполненную
+        /// </summary>
+        /// <param name="documentId">ID документа</param>
+        /// <param name="taskId">ID активной задачи, относящейся к документу</param>
+        /// <returns></returns>
         [HttpPut]
-        [Route("{documentId}/task/{taskId}/confirm")]
+        [Route("{documentId:int}/task/{taskId:int}/confirm")]
         public IActionResult ConfirmTaskOfDocument(int documentId, int taskId)
         {
-            var resultOfOperation = _documentsService.ConfirmActiveTaskOfDocument(documentId, taskId);
+            var resultOfOperation = _documentsRepository.ConfirmActiveTaskOfDocument(documentId, taskId);
 
             if (resultOfOperation)
                 return Ok("Задача выполнена");
 
             else
-                return BadRequest("Возникла ошибка при выполнении задачи");
+                return BadRequest("Ошибка выполнения задачи");
         }
-
     }
 }

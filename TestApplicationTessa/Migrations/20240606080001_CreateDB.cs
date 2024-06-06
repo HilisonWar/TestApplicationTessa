@@ -4,7 +4,7 @@
 
 namespace TestApplicationTessa.Migrations
 {
-    public partial class CreateDb : Migration
+    public partial class CreateDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,8 @@ namespace TestApplicationTessa.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Status = table.Column<string>(type: "TEXT", nullable: false)
+                    Status = table.Column<string>(type: "TEXT", nullable: false),
+                    ActiveTaskId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -28,7 +29,6 @@ namespace TestApplicationTessa.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    IsActiveTask = table.Column<bool>(type: "INTEGER", nullable: false),
                     PreviousTaskId = table.Column<int>(type: "INTEGER", nullable: true),
                     DocumentId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
@@ -49,6 +49,12 @@ namespace TestApplicationTessa.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Documents_ActiveTaskId",
+                table: "Documents",
+                column: "ActiveTaskId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tasks_DocumentId",
                 table: "Tasks",
                 column: "DocumentId");
@@ -57,10 +63,21 @@ namespace TestApplicationTessa.Migrations
                 name: "IX_Tasks_PreviousTaskId",
                 table: "Tasks",
                 column: "PreviousTaskId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Documents_Tasks_ActiveTaskId",
+                table: "Documents",
+                column: "ActiveTaskId",
+                principalTable: "Tasks",
+                principalColumn: "Id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Documents_Tasks_ActiveTaskId",
+                table: "Documents");
+
             migrationBuilder.DropTable(
                 name: "Tasks");
 

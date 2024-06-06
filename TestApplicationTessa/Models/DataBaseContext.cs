@@ -19,8 +19,9 @@ namespace TestApplicationTessa.Models
 
 			modelBuilder.Entity<Document>().HasMany(x => x.Tasks).WithOne(x => x.Document).HasForeignKey(x =>x.DocumentId).OnDelete(DeleteBehavior.Cascade);
 
-		}
+			modelBuilder.Entity<Document>().HasOne(x => x.ActiveTask).WithOne(x => x.ActiveTaskDocument);
 
+		}
 		protected override void OnConfiguring(DbContextOptionsBuilder options) 
 			=> options.UseSqlite("Data Source=tessaDB.db");
 

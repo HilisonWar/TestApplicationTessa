@@ -9,17 +9,18 @@ namespace TestApplicationTessa.Models
 
 		public string Name { get; set; }
 
-		public bool IsActiveTask { get; set; }
-
 		[ForeignKey("PreviousTask")]
 		public int? PreviousTaskId { get; set; } = null;
+        public virtual Task? PreviousTask { get; set; } = null;
 
-		public Task? PreviousTask { get; set; } = null;
-
-		[ForeignKey("Document")]
+        [ForeignKey("Document")]
 		public int? DocumentId { get; set; } = null;
+		public  virtual Document? Document { get; set; } = null;
 
-		public Document? Document { get; set; } = null;
+		public virtual Document? ActiveTaskDocument { get; set; } = null;
 
-	}
+        
+
+    }
+
 }

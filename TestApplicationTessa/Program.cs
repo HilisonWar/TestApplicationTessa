@@ -2,6 +2,10 @@ using TestApplicationTessa.Models;
 using Microsoft.EntityFrameworkCore;
 using TestApplicationTessa.Services.Interfaces;
 using TestApplicationTessa.Services;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore.Internal;
+using TestApplicationTessa.Repositories.Interfaces;
+using TestApplicationTessa.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,9 +16,18 @@ builder.Services.AddControllersWithViews()
 
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.IncludeXmlComments(Path.Combine(
+        AppContext.BaseDirectory,
+        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"), true);
 
-builder.Services.AddTransient<IDocumentsService, DocumentsService>();
+});
+
+
+builder.Services.AddTransient<IDocumentsRepository, DocumentsRepository>();
+
+builder.Services.AddTransient<ITasksRepository, TasksRepository>();
 
 builder.Services.AddDbContext<DataBaseContext>(options =>
 	options.UseSqlite(builder.Configuration.GetConnectionString("DB"))
@@ -31,8 +44,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 

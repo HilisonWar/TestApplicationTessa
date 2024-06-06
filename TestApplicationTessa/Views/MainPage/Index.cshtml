@@ -1,7 +1,7 @@
 ﻿<div id="app">
-    <div class="add-task-button">
+    <div v-on:click="addDocumentWindowActive = !addDocumentWindowActive" class="add-task-button">
         <div class="add-task-button-text">
-            Добавить задачу
+            Добавить документ
         </div>
 
     </div>
@@ -10,34 +10,39 @@
 
         <span v-if="isDocumentsLoading" class="loader"></span>
 
-        <div display v-show="!isDocumentsLoading" class="table-docs-list">
+        <div display="!isDocumentsLoading && documents.length > 0" v-else-if="!isDocumentsLoading && documents.length > 0" class="table-docs-list">
 
             <div class="doc-item" v-for="doc in documents">
 
-                <div class="doc-id">
+                <div class="doc-attribute">
                     Номер документа:{{doc.id}}
                 </div>
 
-                <div class="doc-status">
+                <div class="doc-attribute">
                     Статус:{{doc.status}}
                 </div>
 
                 <div class="doc-tasks-block">
 
                     <div class="doc-tasks-title">
-                        Задачи
+                        Задачи:
                     </div>
 
                     <div class="tasks-container">
 
-                        <div class="doc-tasks" v-if="doc.activeTask != null">
+                        <div class="doc-tasks active-task" v-if="doc.activeTask != null">
 
                             <div class="task-id">
-                                Номер задачи:{{doc.activeTask.id}}
+                                Номер активной задачи:{{doc.activeTask.id}}
                             </div>
 
                             <div class="task-name">
                                 Название:{{doc.activeTask.name}}
+                            </div>
+
+                            <div class="active-task-actions">
+                                <button class="button-style" v-on:click="ConfirmTask(doc.id,doc.activeTask.id)">Выполнить</button>
+                                <button class="button-style" v-on:click="CancelTask(doc.id,doc.activeTask.id)">Отменить</button>
                             </div>
 
                         </div>
@@ -57,6 +62,50 @@
                     </div>
                 </div>
 
+                <div class="doc-attribute">
+
+                    <button class="button-style" v-on:click="DeleteDocument(doc.id)">Удалить документ</button>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="empty-documents-title" v-else>
+            Список документов пуст
+        </div>
+
+
+        <div v-if="addDocumentWindowActive" class="document-window">
+
+            <div class="document-window-add-button" v-on:click="AddTask()">
+                +
+            </div>
+
+            <div class="tasks-list-title">
+                Задачи:
+            </div>
+
+            <div class="tasks-list">
+                <div v-for="task in tasks">
+                    <label>
+                        Имя задачи:
+                    </label>
+                    <input v-model="task.Name"/>
+                    <button class="button-delete-style" v-on:click="DeleteTask(task)">x</button>
+                </div>
+
+                <div v-if="tasks.length == 0">
+                    Список задач пуст
+                </div>
+            </div>
+
+            <div class="create-document-button">
+                <button class="button-style" v-on:click="CreateDocument()">Создать документ</button>
+            </div>
+
+            <div class="cancel-create-document-button">
+                <button class="button-style" v-on:click="CancelCreateDocument()">Отмена</button>
             </div>
 
         </div>
@@ -64,6 +113,8 @@
 
 
     </div>
+
+
 </div>
 
 <style>
@@ -79,13 +130,24 @@
         justify-content: center;
         text-align: center;
         position: absolute;
-        background-color: grey;
+        background-color: white;
         height: 150px;
         width: 150px;
         border-radius: 100px;
+        border:1px solid;
+        border-color: #a59797;
         bottom: 10px;
         right: 10px;
+        font-size: 22px;
+        box-shadow: 0px 5px 10px 2px rgba(34, 60, 80, 0.2);
+        transition: 0.5s;
+ 
     }
+
+    .add-task-button:hover{
+            background-color: #04eb00;
+            cursor: pointer;
+        }
 
     .add-task-button-text {
         text-align: center;
@@ -94,25 +156,32 @@
     .table-docs-block {
         width: 100%;
         height: 100%;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
 
     .table-docs-list {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: space-between;
-        width: 100%;
+        justify-content: flex-start;
+        gap: 20px;
+        width: 90%;
         height: 100%;
+        border-left: 1px solid;
+        border-right: 1px solid;
+        border-color: #2d2d2d4f;
     }
 
     .doc-item {
         width: 100%;
         display: grid;
-        grid-template-columns: 1fr 1fr 4fr;
+        margin-top:10px;
+        border:1px solid;
+        border-color: #2d2d2d4f;
+        grid-template-columns: 1fr 1fr 4fr 1fr;
     }
 
     .doc-tasks-block {
@@ -124,7 +193,9 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-start;
+        gap:35px;
+        text-align:center;
     }
 
     .loader {
@@ -147,7 +218,130 @@
             transform: rotate(360deg);
         }
     }
-</style>
+
+
+    .document-window
+    {
+        display:grid;
+        grid-template-rows: 1fr 2fr 4fr 2fr;
+        grid-template-columns:1fr;
+        row-gap:15px;
+        justify-content:space-between;
+        position: absolute;
+        width: 500px;
+        height: 350px;
+        background-color: #dfdfdf;
+        bottom: 10px;
+    }
+
+    .document-window-add-button
+    {
+        background-color: white;
+        border-radius: 100px;
+        height: 80px;
+        width: 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 30px;
+        margin:0 auto;
+        margin-top:10px;
+        justify-content: center;
+        box-shadow: 0px 5px 10px 2px rgba(34, 60, 80, 0.2);
+        transition:0.3s;
+    }
+
+    .document-window-add-button:hover
+    {
+        cursor:pointer;
+
+        background-color: #04eb00;
+    }
+
+    .create-document-button
+    {
+        margin:0 auto;
+    }
+    .tasks-list-title
+    {
+        margin:0 auto;
+    }
+
+    .empty-documents-title{
+
+        font-family:'Times New Roman';
+        font-size:30px;
+
+    }
+
+    .tasks-list
+    {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 5px;
+        overflow: auto;
+    }
+
+    .doc-attribute
+    {
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+    }
+
+    .active-task
+    {
+        background-color:yellow;
+
+    }
+
+    .doc-tasks
+    {
+        border:1px solid black;
+    }
+
+    .doc-tasks-title
+    {
+        border:1px solid black;
+    }
+
+    .cancel-create-document-button
+    {
+        margin: 0 auto;
+        margin-bottom: 10px;
+    }
+    
+    .button-style
+    {
+        border-color: #adadad;
+        height: 30px;
+        background-color: white;
+        border-radius: 100px;
+        box-shadow: 4px 4px 8px 0px rgba(34, 60, 80, 0.2);
+        transition:0.2s;
+    }
+
+    .button-style:hover
+    {
+      background-color: #62eb5978;
+      cursor:pointer;
+    }
+
+    .button-delete-style
+    {
+        background-color: white;
+        transition:0.2s;
+    }
+
+    .button-delete-style:hover
+    {
+            background-color: #f50b0b82;
+    }
+
+    </style>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -156,17 +350,36 @@
     const Application = {
         data() {
             return {
+                addDocumentWindowActive:false,
                 documents: [],
-                isDocumentsLoading : true
+                tasks:[],
+                isDocumentsLoading: true
             }
         },
 
-        mounted() {
+        created() {
 
             this.GetAllDocuments();
         },
 
         methods: {
+
+            AddTask() {
+                let task = {
+                    Name: ""
+                };
+
+                this.tasks.push(task);
+            },
+
+            DeleteTask(task) {
+                
+                let indexOfTask = this.tasks.indexOf(task);
+
+                if (indexOfTask !== -1) {
+                    this.tasks.splice(indexOfTask, 1);
+                }
+            },
 
             async GetAllDocuments() {
 
@@ -180,15 +393,94 @@
                     })
             },
 
+            async CreateDocument() { 
+
+                if (this.tasks.length > 0) { 
+
+
+                    let document = {
+
+                        Tasks: this.tasks
+                    };
+
+                    await axios.post("api/documents",document)
+                        .then(response => {
+
+                            alert(response.data);
+
+                            if (response.status == 200) {
+
+                                this.tasks = [];
+
+                                this.addDocumentWindowActive = false;
+
+                                this.GetAllDocuments();
+                            }
+                        }).catch(ex =>{
+                            alert(ex.response.data);
+                        })
+                        
+
+                }
+                else{
+                    alert("Должна быть добавлена как минимум 1 задача");
+                }
+
+            },
+
 
             async DeleteDocument(docId) {
                 if (confirm("Вы действительно хотите удалить документ?")) {
 
                     await axios.delete("api/documents/" + docId)
                         .then(response => {
+
                             alert(response.data);
+
+                            if (response.status == 200) {
+
+                                this.GetAllDocuments();
+                            }
+
                         })
                 }
+            },
+
+            async ConfirmTask(docId, taskId) {
+
+                await axios.put("api/documents/" + docId + "/task/" + taskId + "/confirm")
+                    .then(response => {
+
+                        console.log(response);
+
+                        alert(response.data);
+
+                        if (response.status == 200){
+
+                            this.GetAllDocuments();
+                        }
+                    });
+            },
+
+            async CancelTask(docId, taskId) {
+
+                await axios.put("api/documents/" + docId + "/task/" + taskId + "/cancel")
+                    .then(response => {
+
+                        alert(response.data);
+
+                        if (response.status == 200) {
+
+                            this.GetAllDocuments();
+                        }
+                    });
+            },
+
+            CancelCreateDocument()
+            {
+                this.tasks = [];
+
+                this.addDocumentWindowActive = false;
             }
 
         }

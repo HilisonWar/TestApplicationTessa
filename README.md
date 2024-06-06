@@ -1,1 +1,10 @@
-# TestApplicationTessa
+# Мини-приложение для управления процессами в системе СЭД Tessa
+
+# Реализованные API методы
+<b>GET /api/documents </b> - получение списка созданных документов, хранящихся в БД <br>
+<b>GET /api/documents/{id} </b> - получение документа по его идентификатору (id) <br> 
+<b>POST /api/documents </b> - добавление нового документа с перечнем заданий <br>
+<b>DELETE /api/documents/{id} </b> - удалениие документа с определенным идентификатором (id)
+<b>PUT /api/documents/{documentId}/tasks/{taskId}/cancel </b> - отмена активной задачи документа по ее идентификатору (taskId) и идентификатору документа (documentId)<br>
+<b>PUT /api/documents/{documentId}/tasks/{taskId}/confirm </b> - установление активной задачи документа как выполненной
+# Инструкция по запуску
